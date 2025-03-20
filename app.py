@@ -1,9 +1,10 @@
 # app.py
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from models import db, Event
 from datetime import datetime
+from flask_lambda import FlaskLambda    
 
-app = Flask(__name__)
+app = FlaskLambda(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///events.db'
 app.config['SECRET_KEY'] = 'your_secret_key'
 db.init_app(app)
@@ -96,6 +97,13 @@ def delete_event(event_id):
     db.session.delete(event)
     db.session.commit()
     return redirect(url_for('view_events'))
+
+# Netlify Lambda function entry point
+from flask_lambda import function
+@function
+def handler(event, context):
+    return app(event, context)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
